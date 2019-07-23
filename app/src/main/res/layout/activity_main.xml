@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
+
+    <FrameLayout
+        android:id="@+id/camera_preview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/capture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="捕获" />
+
+        <Button
+            android:id="@+id/check_photo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="人脸集合"
+            />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/target_image"
+        android:layout_width="240dp"
+        android:layout_toRightOf="@+id/camera_preview"
+        android:layout_height="240dp"/>
+    <TextView
+        android:id="@+id/target_msg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/target_image"
+        android:layout_alignLeft="@+id/target_image"
+        android:layout_alignRight="@+id/target_image"
+        />
+
+    <EditText
+        android:id="@+id/image_info"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:editable="false"
+        android:layout_alignParentRight="true" />
+</RelativeLayout>
