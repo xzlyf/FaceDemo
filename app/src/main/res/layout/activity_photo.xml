@@ -23,25 +23,40 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="新建集合" />
-        <Button
-            android:id="@+id/btn_3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="加入人脸"/>
+
         <Button
             android:id="@+id/btn_4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="删除所有"/>
+            android:text="删除所有" />
 
+    </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/oper_layout_2"
+        android:layout_width="wrap_content"
+        android:layout_height="200dp"
+        android:layout_toRightOf="@+id/oper_layout"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/btn_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="加入多个" />
+
+        <Button
+            android:id="@+id/btn_5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="加入单个" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:layout_toRightOf="@+id/oper_layout"
+        android:layout_toRightOf="@+id/oper_layout_2"
         android:orientation="vertical">
 
         <TextView
@@ -55,22 +70,47 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textIsSelectable="true" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="人脸数据路径:"
             android:textColor="#272727" />
+
         <TextView
             android:id="@+id/face_dir"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textIsSelectable="true" />
+
         <TextView
             android:id="@+id/face_token_total"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#272727"
-            android:text="集合总数量:null"/>
+            android:text="已注册人脸:null"
+            android:textColor="#272727" />
+
+        <TextView
+            android:id="@+id/fece_set_outer_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="唯一标识："
+            android:textColor="#272727" />
+        <TextView
+            android:id="@+id/fece_set_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="集合名称："
+            android:textColor="#272727" />
+
+        <TextView
+            android:id="@+id/fece_set_tags"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="组名:"
+            android:textColor="#272727" />
+
+
     </LinearLayout>
 
     <TextView
@@ -93,9 +133,9 @@
     </ScrollView>
 
     <FrameLayout
-        android:layout_alignParentRight="true"
         android:layout_width="400dp"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recycler_photo"

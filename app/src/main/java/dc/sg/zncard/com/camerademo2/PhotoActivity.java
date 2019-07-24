@@ -39,7 +39,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class PhotoActivity extends AppCompatActivity implements View.OnClickListener {
-    private final String default_num = "suprexzlyf";//账号下全局唯一的 FaceSet 自定义标识，可以用来管理 FaceSet 对象。最
+    private final String outer_id = "suprexzlyf";//账号下全局唯一的 FaceSet 自定义标识，可以用来管理 FaceSet 对象。最
     private final String tags = "d1";//FaceSet 自定义标签组成的字符串，用来对 FaceSet 分组。
     private final String faceSec = "test_set_1"; //集合名称
     private String faceSetToken = "";//待返回的集合Token
@@ -56,10 +56,14 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
     private Button btn_2;
     private Button btn_3;
     private Button btn_4;
+    private Button btn_5;
     private TextView log;
     private TextView face_set_token;
     private TextView face_dir;
     private TextView face_token_total;
+    private TextView fece_set_outer_id;
+    private TextView fece_set_name;
+    private TextView fece_set_tags;
     private ScrollView scroll_view;
     private RecyclerView recycler;
     private PhotoAdapter adapter;
@@ -74,16 +78,25 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
         btn_2 = findViewById(R.id.btn_2);
         btn_3 = findViewById(R.id.btn_3);
         btn_4 = findViewById(R.id.btn_4);
+        btn_5 = findViewById(R.id.btn_5);
         scroll_view = findViewById(R.id.scroll_aa);
         log = findViewById(R.id.net_log);
         face_set_token = findViewById(R.id.face_set_token);
         face_dir = findViewById(R.id.face_dir);
         face_token_total = findViewById(R.id.face_token_total);
+        fece_set_outer_id = findViewById(R.id.fece_set_outer_id);
+        fece_set_name = findViewById(R.id.fece_set_name);
+        fece_set_tags = findViewById(R.id.fece_set_tags);
         btn_2.setOnClickListener(this);
         btn_1.setOnClickListener(this);
         btn_3.setOnClickListener(this);
         btn_4.setOnClickListener(this);
+        btn_5.setOnClickListener(this);
 
+
+        fece_set_outer_id.setText("唯一标识："+outer_id);
+        fece_set_name.setText("集合名称："+faceSec);
+        fece_set_tags.setText("组名："+tags);
         init_data();
 
     }
@@ -110,7 +123,7 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_1:
-                model.getServerSet();
+                model.getServerSet();//查看集合
                 break;
             case R.id.btn_2:
                 model.FaceSetCreate();//创建集合
@@ -120,6 +133,9 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
                 break;
             case R.id.btn_4:
                 model.deleteAll();//删除所有数据
+                break;
+            case R.id.btn_5:
+
                 break;
         }
     }
@@ -147,7 +163,7 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                face_token_total.setText("集合总数量：" + msg);
+                face_token_total.setText("已注册人脸：" + msg);
             }
         });
     }
@@ -305,7 +321,7 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
                             .add("api_key", "r8Kq1W8OGefvVE7-C1u1RysBuKfINlE7")
                             .add("api_secret", "phLWOTXum-DKjRH02AnjSOa-woUG6tTH")
                             .add("display_name", faceSec)
-                            .add("outer_id", default_num)
+                            .add("outer_id", outer_id)
                             .add("tags", tags)
                             .add("force_merge", "1")
                             .build();
@@ -440,6 +456,7 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
 
                             }
 
+
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -499,8 +516,8 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
                                 obj = new JSONObject(data);
 
                                 try {
-
                                     setLog("已删除集合所有人脸数据：" +'\n'+ obj.getString("faceset_token"));
+                                    LitePalUtils.clean();//删除本地数据数据，
                                     setTokenTotal(obj.getString("face_count"));
 
                                 } catch (JSONException e) {
@@ -584,7 +601,7 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
                                     }
 
                                     showPhotoList(tokenlist);
-
+                                    setTokenTotal(obj.getString("face_count"));
                                 }else{
                                     setLog("===当前集合无数据===");
                                 }
