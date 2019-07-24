@@ -10,7 +10,7 @@ import java.io.FileNotFoundException;
 
 public class ImageUtil {
     /**
-     * 通过Base32将Bitmap转换成Base64字符串
+     * 将Bitmap转换成Base64字符串
      * @param bit
      * @return
      */

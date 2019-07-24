@@ -157,7 +157,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //保存图片操作
             Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
             //开始匹配相似图片
-            startComparison(bmp);
+//            startComparison(bmp);
+            presenter.searchFace(ImageUtil.Bitmap2StrByBase64(bmp));
             //路径及文件名
             String fileName = Environment.getExternalStorageDirectory()
                     + File.separator

@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ScrollView;
@@ -161,6 +162,7 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
                         return;
                     }
                     setLog("开始获取图片Token");
+                    tokenList.clear();
                     for (int i = 0; i < filelist.length; i++) {
                         //开始获取照片Token
                         getFaceToken(ImageUtil.lcoalImage2Base64(filelist[i].getAbsolutePath()));
@@ -243,7 +245,8 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
                             //完成标识
                             if (isover) {
                                 setLog("人脸token获取完成");
-                                addToken2Set();
+                                addToken2Set();//开始上传人脸数据
+                                isover = false;
                             }
 
                         }
@@ -335,6 +338,7 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    Log.d(TAG, "run: 集合大小"+tokenList.size());
                     for (int i = 0; i < tokenList.size(); i++) {
                         setFace2Set(tokenList.get(i));
 
@@ -394,7 +398,8 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
 
                         try {
 
-                            setLog("已加入集合：" + obj.getString("faceset_token"));
+                            setLog("已加入集合的token：" + token);
+//                            setLog("已加入集合：" + obj.getString("faceset_token"));
                             setTokenTotal(obj.getString("face_count"));
 
                         } catch (JSONException e) {

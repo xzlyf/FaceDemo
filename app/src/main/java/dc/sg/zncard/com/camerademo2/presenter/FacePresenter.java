@@ -13,9 +13,11 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import dc.sg.zncard.com.camerademo2.MainActivity;
+import dc.sg.zncard.com.camerademo2.PhotoActivity;
 import dc.sg.zncard.com.camerademo2.constant.Local;
 import dc.sg.zncard.com.camerademo2.entity.Compare;
 import dc.sg.zncard.com.camerademo2.model.Model;
+import dc.sg.zncard.com.camerademo2.utils.SharedPreferencesUtils;
 import dc.sg.zncard.com.camerademo2.utils.SignMD5Util;
 import dc.sg.zncard.com.camerademo2.utils.StringUtils;
 import okhttp3.Call;
@@ -145,6 +147,63 @@ public class FacePresenter {
 
             }
         });
+    }
+
+    /**
+     * 人脸搜索
+     */
+    public void searchFace(final String base64String){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                final String path = "https://api-cn.faceplusplus.com/facepp/v3/search";
+
+                OkHttpClient client = new OkHttpClient.Builder()
+                        .connectTimeout(10, TimeUnit.SECONDS)
+                        .readTimeout(10, TimeUnit.SECONDS)
+                        .writeTimeout(10, TimeUnit.SECONDS)
+                        .build();
+                if (SharedPreferencesUtils.getdata(view, "null").equals("null")) {
+                    return;
+                }
+                FormBody formBody = new FormBody.Builder()
+                        .add("api_key", "r8Kq1W8OGefvVE7-C1u1RysBuKfINlE7")
+                        .add("api_secret", "phLWOTXum-DKjRH02AnjSOa-woUG6tTH")
+                        .add("image_base64", base64String)
+                        .add("faceset_token", SharedPreferencesUtils.getdata(view, "null"))
+                        .build();
+
+                Request request = new Request.Builder()
+                        .post(formBody)
+                        .url(path)
+                        .build();
+
+                Call call = client.newCall(request);
+
+                call.enqueue(new Callback() {
+                    @Override
+                    public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                        Log.d(TAG, "onFailure: ");
+                    }
+
+                    @Override
+                    public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                        String data = response.body().string();
+                        JSONObject obj = null;
+                        Log.d(TAG, "onResponse: "+data);
+
+                        try {
+                            obj = new JSONObject(data);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+
+            }
+        }).start();
 
     }
 }
