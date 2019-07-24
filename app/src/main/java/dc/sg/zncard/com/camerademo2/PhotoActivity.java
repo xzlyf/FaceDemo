@@ -4,6 +4,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -23,7 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import dc.sg.zncard.com.camerademo2.adapter.PhotoAdapter;
+import dc.sg.zncard.com.camerademo2.entity.FaceSetInfo;
 import dc.sg.zncard.com.camerademo2.entity.FaceToken;
+import dc.sg.zncard.com.camerademo2.sql.LitePalUtils;
 import dc.sg.zncard.com.camerademo2.utils.ImageUtil;
 import dc.sg.zncard.com.camerademo2.utils.SharedPreferencesUtils;
 import okhttp3.Call;
@@ -56,6 +61,8 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
     private TextView face_dir;
     private TextView face_token_total;
     private ScrollView scroll_view;
+    private RecyclerView recycler;
+    private PhotoAdapter adapter;
 
 
     @Override
@@ -86,6 +93,15 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
         face_set_token.setText(SharedPreferencesUtils.getdata(this, "null"));
         //暂时默认路径
         face_dir.setText(fileDir);
+        init_Recycler();
+    }
+
+    private void init_Recycler() {
+        recycler = findViewById(R.id.recycler_photo);
+        adapter= new PhotoAdapter(this);
+        recycler.setLayoutManager(new GridLayoutManager(this,2));
+        recycler.setAdapter(adapter);
+
     }
 
     private Model model = new Model();
@@ -94,6 +110,7 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_1:
+                model.getServerSet();
                 break;
             case R.id.btn_2:
                 model.FaceSetCreate();//创建集合
@@ -134,6 +151,17 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
             }
         });
     }
+    private void showPhotoList(final List<String> tokenlist) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                adapter.refresh(tokenlist);
+
+            }
+        });
+
+    }
 
     class Model extends Thread {
         private boolean isover = false;//标识
@@ -163,9 +191,10 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
                     }
                     setLog("开始获取图片Token");
                     tokenList.clear();
+                    LitePalUtils.clean();//删除库原有的数据，
                     for (int i = 0; i < filelist.length; i++) {
                         //开始获取照片Token
-                        getFaceToken(ImageUtil.lcoalImage2Base64(filelist[i].getAbsolutePath()));
+                        getFaceToken(filelist[i].getAbsolutePath(),ImageUtil.lcoalImage2Base64(filelist[i].getAbsolutePath()));
                         try {
                             Thread.sleep(300);
                         } catch (InterruptedException e) {
@@ -180,7 +209,7 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
         /**
          * 获取照片的token
          */
-        public void getFaceToken(final String base64) {
+        public void getFaceToken(final String imgPath,final String base64) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -229,7 +258,7 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
                                     setLog("人脸token获取成功：" + token.getFaces().get(0).getFace_token());
                                     //加入集合待会循环加入人脸集合
                                     tokenList.add(token.getFaces().get(0).getFace_token());
-
+                                    LitePalUtils.saveData(imgPath,token.getFaces().get(0).getFace_token());//存储数据
                                     //开始加入集合
 //                            setFace2Set(token.getFaces().get(0).getFace_token());
                                 } catch (JSONException e) {
@@ -498,5 +527,85 @@ public class PhotoActivity extends AppCompatActivity implements View.OnClickList
 
         }
 
+
+        /**
+         * 获取服务端所有人脸集合
+         */
+        public void getServerSet(){
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+
+                    final String path = "https://api-cn.faceplusplus.com/facepp/v3/faceset/getdetail";
+
+                    OkHttpClient client = new OkHttpClient.Builder()
+                            .connectTimeout(10, TimeUnit.SECONDS)
+                            .readTimeout(10, TimeUnit.SECONDS)
+                            .writeTimeout(10, TimeUnit.SECONDS)
+                            .build();
+                    if (SharedPreferencesUtils.getdata(PhotoActivity.this, "null").equals("null")) {
+                        setLog("请确保当前集合正确且存在");
+                        return;
+                    }
+                    FormBody formBody = new FormBody.Builder()
+                            .add("api_key", "r8Kq1W8OGefvVE7-C1u1RysBuKfINlE7")
+                            .add("api_secret", "phLWOTXum-DKjRH02AnjSOa-woUG6tTH")
+                            .add("faceset_token", SharedPreferencesUtils.getdata(PhotoActivity.this, "null"))
+                            .build();
+
+                    Request request = new Request.Builder()
+                            .post(formBody)
+                            .url(path)
+                            .build();
+
+                    Call call = client.newCall(request);
+
+                    call.enqueue(new Callback() {
+                        @Override
+                        public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                            setLog("集合查询链接失败");
+                        }
+
+                        @Override
+                        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                            String data = response.body().string();
+                            JSONObject obj = null;
+                            Log.d(TAG, "onResponse: "+data);
+                            try {
+                                obj = new JSONObject(data);
+                                Gson gson = new Gson();
+                                FaceSetInfo info = gson.fromJson(obj.toString(),FaceSetInfo.class);
+
+                                if (info.face_tokens != null){
+
+                                    List<String> tokenlist = new ArrayList<>();
+                                    for(int i = 0;i<info.getFace_tokens().size();i++){
+                                        tokenlist.add(info.getFace_tokens().get(i));
+                                    }
+
+                                    showPhotoList(tokenlist);
+
+                                }else{
+                                    setLog("===当前集合无数据===");
+                                }
+
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                setLog("集合查询解析失败");
+
+                            }
+
+                        }
+                    });
+
+                }
+            }).start();
+
+        }
+
+
     }
+
+
 }

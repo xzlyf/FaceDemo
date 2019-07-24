@@ -1,6 +1,7 @@
 package dc.sg.zncard.com.camerademo2;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -80,13 +81,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         preview = new CameraPreview(this, camera);
         Camera.Parameters parameters = camera.getParameters();
-        List<Camera.Size> sizes =parameters.getSupportedPreviewSizes();
-        for(int i = 0 ;i<sizes.size();i++){
-            Log.d("xz", "支持的分辨率:: "+sizes.get(i).width+":"+sizes.get(i).height);
+        List<Camera.Size> sizes = parameters.getSupportedPreviewSizes();
+        for (int i = 0; i < sizes.size(); i++) {
+            Log.d("xz", "支持的分辨率:: " + sizes.get(i).width + ":" + sizes.get(i).height);
         }
         Camera.Size previewSize = parameters.getPreviewSize();    // 当前 Camera 分辨率
         //添加至视图
-        preview_layout.addView(preview, new FrameLayout.LayoutParams(previewSize.width,previewSize.height, Gravity.START));
+        preview_layout.addView(preview, new FrameLayout.LayoutParams(previewSize.width, previewSize.height, Gravity.START));
 
 
     }
@@ -153,6 +154,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Camera.PictureCallback callback = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(byte[] bytes, Camera camera) {
+            showLoading();
+
             closeCamera();
             //保存图片操作
             Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
@@ -197,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void startComparison(final Bitmap bmp) {
         //恢复标识
         Local.isover = false;
-        default_num =1;
+        default_num = 1;
         final String fileName = Environment.getExternalStorageDirectory()
                 + File.separator
                 + "CameraDemo"
@@ -308,12 +311,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private int default_num = 1;
+
     @Override
     public void showInfo(final String msg) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                imageInfo.append("正在匹配第"+default_num+"张,相似度"+msg + "\n");
+                imageInfo.append("正在匹配第" + default_num + "张,相似度" + msg + "\n");
                 default_num++;
             }
         });
@@ -332,13 +336,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void run() {
                 Picasso.get().load(Uri.parse(realPath)).into(target);
-                target_msg.setText("相似度:"+d+'\n');
+                target_msg.setText("相似度:" + d + '\n');
 
-                if (d>80){
+                if (d > 80) {
                     target_msg.append("是同一个人");
-                }else if (d>=60){
+                } else if (d >= 60) {
                     target_msg.append("可能是同一个人");
-                }else if (d<60){
+                } else if (d < 60) {
                     target_msg.append("不是同一个人");
 
                 }
@@ -352,12 +356,77 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ///找到集合map最大的key
         for (Double key : map.keySet()) {
 
-            if (key>d){
+            if (key > d) {
                 d = key;
             }
 
         }
-        showTargetInfo(d,map.get(d));
+        showTargetInfo(d, map.get(d));
 
+    }
+
+
+    public void showTargetPhoto(final String path,final double d) {
+        File file = new File(path);
+        //如果照片不存在
+        if (!file.exists()) {
+            showToast("本地数据库与云端数据库不同步。重新创建");
+        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String realPath = "file://" + path;
+
+                Picasso.get().load(Uri.parse(realPath)).into(target);
+                target_msg.setText("相似度:" + d + '\n');
+
+                if (d > 80) {
+                    target_msg.append("是同一个人");
+                } else if (d >= 60) {
+                    target_msg.append("可能是同一个人");
+                } else if (d < 60) {
+                    target_msg.append("不是同一个人");
+
+                }
+            }
+        });
+
+    }
+
+    private ProgressDialog progressDialog;
+
+    public void showLoading() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressDialog = new ProgressDialog(MainActivity.this);
+                progressDialog.setTitle("加载中");
+                progressDialog.setMessage("稍等片刻!");
+                progressDialog.setCancelable(false);
+                progressDialog.show();
+            }
+        });
+
+    }
+
+    public void dismissLoading() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (progressDialog != null && progressDialog.isShowing()) {
+                    progressDialog.dismiss();
+                    progressDialog = null;
+                }
+            }
+        });
+    }
+
+    public void showToast(final String msg) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

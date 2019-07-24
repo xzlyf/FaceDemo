@@ -16,7 +16,9 @@ import dc.sg.zncard.com.camerademo2.MainActivity;
 import dc.sg.zncard.com.camerademo2.PhotoActivity;
 import dc.sg.zncard.com.camerademo2.constant.Local;
 import dc.sg.zncard.com.camerademo2.entity.Compare;
+import dc.sg.zncard.com.camerademo2.entity.SearchReturn;
 import dc.sg.zncard.com.camerademo2.model.Model;
+import dc.sg.zncard.com.camerademo2.sql.LitePalUtils;
 import dc.sg.zncard.com.camerademo2.utils.SharedPreferencesUtils;
 import dc.sg.zncard.com.camerademo2.utils.SignMD5Util;
 import dc.sg.zncard.com.camerademo2.utils.StringUtils;
@@ -149,6 +151,7 @@ public class FacePresenter {
         });
     }
 
+
     /**
      * 人脸搜索
      */
@@ -184,19 +187,41 @@ public class FacePresenter {
                 call.enqueue(new Callback() {
                     @Override
                     public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                        Log.d(TAG, "onFailure: ");
+                        view.showToast("连接失败");
+                        view.dismissLoading();
                     }
 
                     @Override
                     public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                         String data = response.body().string();
                         JSONObject obj = null;
-                        Log.d(TAG, "onResponse: "+data);
 
                         try {
                             obj = new JSONObject(data);
+
+                            Gson gson = new Gson();
+                            SearchReturn searchReturn = gson.fromJson(obj.toString(),SearchReturn.class);
+                            view.dismissLoading();
+
+                            if(searchReturn.faces!=null){
+                                if (searchReturn.results !=null){
+
+                                    view.showTargetPhoto(LitePalUtils.searchData(searchReturn.getResults().get(0).getFace_token()),searchReturn.getResults().get(0).getConfidence());
+
+                                }else{
+                                    view.showToast("未检测到人脸");
+
+                                }
+
+                            }else{
+                                view.showToast("未检测到人脸");
+                            }
+
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            view.dismissLoading();
+                            view.showToast("数据解析失败");
+
                         }
 
                     }
